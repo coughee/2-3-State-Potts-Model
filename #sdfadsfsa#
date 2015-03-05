@@ -1,0 +1,9 @@
+The equivalent expression to eq 6 for the 3 state potts model can
+
+Applying the method of the previous section to the 3 state potts model, an equivalent expression to that of eq 6 can be constructed. In this case there are 6 total unique energy values of the hamiltonian, but only 5 couplings are possible if parity and rotaional symmetry are to be observed. This results in a non-square matrix which can not be inverted, rendering the current approach unsuitable for solving the 3 state potts model.
+
+In order to proceed using the real-space RG method, the number of couplings must be made to match the unique energy states of the Hamiltonian. To do this, we will construct a new Hamiltonian based on the symmetries of the lattice. In Table 1 we produced such a grouping for the 2x2 lattice with Hamiltonian given by Eq 4. We can then assign coupling values to each category
+
+For a square lattice there are only two
+
+If

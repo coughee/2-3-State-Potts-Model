@@ -1,0 +1,184 @@
+"Lattice.h"
+#include <vector>
+#include <stdlib.h>
+#include <time.h>
+#include <iostream>
+
+Lattice::Lattice(int size, int qMax, double mField){
+  srand(time(0));
+  this->qMax = qMax;
+  this->size = size;
+  this->mField = mField;
+
+  //initialise spin density values
+  this->spinDensity.resize(qMax);
+  
+  initialiseLattice(size);
+  randomConfig();
+  initialEnergies();
+  
+}
+
+Lattice::Lattice(const Lattice& orig){
+
+}
+
+Lattice::~Lattice(){
+
+}
+
+void Lattice::initialiseLattice(int size){
+  this->lattice.resize(size);
+  for(int i = 0; i < size; i++){
+    this->lattice[i].resize(size);
+  }
+  this->energies.resize(size);
+  for(int i = 0; i < size; i++){
+    this->energies[i].resize(size);
+  }
+  
+
+}
+
+void Lattice::initialEnergies(){
+  for(int i = 0; i  < size; i++){
+    for(int j = 0; j < size; j++){
+      this->energies[i][j] = calcEnergy(i,j);
+    }
+  }
+}
+
+void Lattice::randomConfig(){
+  for(int i = 0; i < qMax; i++){
+    spinDensity[i] = 0;
+  }
+
+  int spinVal = 0;
+  
+  for(int i = 0; i < size; i++){
+    for(int j = 0; j < size; j++){
+      spinVal = rand() % this->qMax;
+      this->lattice[i][j] = spinVal;
+      spinDensity[spinVal] += 1;
+    }
+  }
+
+  
+  
+}
+
+void Lattice::printLattice(){
+  for(int i = 0; i < size; i++){
+    for(int j = 0; j < size; j++){
+      std::cout << this->lattice[i][j] << "\t";
+    }
+    std::cout << "\n";
+  }
+}
+
+
+void Lattice::printEnergies(){
+  for(int i = 0; i < size; i++){
+    for(int j = 0; j < size; j++){
+      std::cout << this->energies[i][j] << "\t";
+    }
+    std::cout << "\n";
+  }
+}
+
+void Lattice::pickSite(){
+  this->curX = rand() % this->size;
+  this->curY = rand() % this->size;
+}
+
+double Lattice::calcEnergy(int i, int j){
+  double ecur = 0;
+  double cVal = this->lattice[i][j];
+  if(i > 0){
+    if(i < this->size - 1){
+      ecur += interaction(cVal,this->lattice[i + 1][j]);
+      ecur += interaction(cVal,this->lattice[i - 1][j]);
+    }
+    else{
+      ecur += interaction(cVal,this->lattice[i - 1][j]);
+      ecur += interaction(cVal,this->lattice[0][j]);
+    }
+  }
+  else{
+    ecur += interaction(cVal,this->lattice[i + 1][j]);
+    ecur += interaction(cVal,this->lattice[this->size - 1][j]);
+  }
+  
+  if(j > 0){
+    if(j < this->size - 1){
+      ecur += interaction(cVal,this->lattice[i][j + 1]);
+      ecur += interaction(cVal,this->lattice[i][j - 1]);
+    }
+    else{
+      ecur += interaction(cVal,this->lattice[i][j - 1]);
+      ecur += interaction(cVal,this->lattice[i][0]);
+    }
+  }
+  else{
+    ecur += interaction(cVal,this->lattice[i][j + 1]);
+    ecur += interaction(cVal,this->lattice[i][this->size - 1]);
+  }
+  if(cVal == 0){
+    if(this->mField > 0){
+      ecur += mField;
+    }
+  }
+  return ecur;
+}
+
+double Lattice::interaction(int s1, int s2){
+  if(s1 == s2){
+    return 1.;
+  }
+  else{
+    return 0;
+  }
+}
+
+void Lattice::doStep(){
+  pickSite();
+  oldspin = lattice[curX,curY];
+
+  newspin = rand() % this->qMax;
+  lattice[curX,curY] = newspin;
+  spinDensity[oldspin] -= 1;
+  spinDensity[newspin] += 1; 
+  eold = energies[curX,curY];
+  enew = calcEnergy(curX,curY);
+
+  echange = enew - eold;
+
+  if(echange < 0){
+    //Accept
+    energies[curX][curY] = enew;
+  }
+  else if(exp(-echange/this->T) > rand()/(double)(RAND_MAX)){
+    //Accept
+    energies[curX][curY] = enew;
+  }
+  else{
+    //Undo
+    lattice[curX][curY] = oldspin;
+  }
+  
+}
+
+void Lattice::mcLoop(double Tstart, double Tend, double numSteps){
+  this->T = Tstart;
+  
+
+}
+
+void Lattice::noTempLoop(double T, double numSteps){
+  this->T = T;
+  for(int i = 0; i < numSteps; i++){
+    doStep();
+  }
+}
+
+
