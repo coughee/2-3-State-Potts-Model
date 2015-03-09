@@ -130,7 +130,7 @@ double Lattice::calcEnergy(int i, int j){
 
 double Lattice::interaction(int s1, int s2){
   if(s1 == s2){
-    return this->spinCoupling*1.;
+    return this->spinCoupling;
   }
   else{
     return 0;
@@ -231,8 +231,8 @@ void Lattice::printSpins(){
 
 void Lattice::magFieldChange(double numMag,double numSteps){
   this->T = 1;
-  double magStart = -0.02;
-  double magEnd = 0.02;
+  double magStart = -10;
+  double magEnd = 10;
   double magStep = (magEnd - magStart)/numMag;
   this->mField = magStart;
   double magnetisation;
@@ -248,7 +248,7 @@ void Lattice::magFieldChange(double numMag,double numSteps){
       }
       doStep();
     }
-    curResult[1] /= numSteps;
+    curResult[1] /= (numSteps - numSteps/10);
     results.push_back(curResult);
     this->mField += magStep;
     randomConfig();
